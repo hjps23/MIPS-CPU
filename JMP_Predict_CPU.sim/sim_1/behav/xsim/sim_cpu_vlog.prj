@@ -1,0 +1,24 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  \
+"../../../../JMP_Predict_CPU.gen/sources_1/ip/DS_DRAM/sim/DS_DRAM.v" \
+"../../../../JMP_Predict_CPU.gen/sources_1/ip/CS_DRAM/sim/CS_DRAM.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/ALU.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/BPB.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/BubleDel.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/CPU.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/CU.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/EXMEM.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/Hi_reg.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/IDEX.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/IFID.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/Lo_reg.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/MEMWB.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/PC.v" \
+"../../../../JMP_Predict_CPU.srcs/sources_1/new/RegFile.v" \
+"../../../../JMP_Predict_CPU.srcs/sim_1/new/sim_cpu.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

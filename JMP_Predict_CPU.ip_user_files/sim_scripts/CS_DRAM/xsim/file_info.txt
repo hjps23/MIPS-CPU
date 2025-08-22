@@ -1,0 +1,2 @@
+CS_DRAM.v,verilog,xil_defaultlib,../../../../JMP_Predict_CPU.gen/sources_1/ip/CS_DRAM/sim/CS_DRAM.v,
+glbl.v,Verilog,xil_defaultlib,glbl.v

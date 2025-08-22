@@ -1,0 +1,3 @@
+dist_mem_gen_v8_0.v,verilog,dist_mem_gen_v8_0_13,../../../ipstatic/simulation/dist_mem_gen_v8_0.v,
+DS_DRAM.v,verilog,xil_defaultlib,../../../../24_single_cpu.gen/sources_1/ip/DS_DRAM/sim/DS_DRAM.v,
+glbl.v,Verilog,xil_defaultlib,glbl.v

@@ -1,0 +1,23 @@
+0.7
+2020.2
+Apr 18 2022
+16:05:34
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.gen/sources_1/ip/CS_DRAM/sim/CS_DRAM.v,1755766792,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/ALU.v,,CS_DRAM,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.gen/sources_1/ip/DS_DRAM/sim/DS_DRAM.v,1754967222,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.gen/sources_1/ip/CS_DRAM/sim/CS_DRAM.v,,DS_DRAM,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.sim/sim_1/behav/xsim/glbl.v,1649976174,verilog,,,,glbl,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sim_1/new/sim_cpu.v,1755762628,verilog,,,,sim_cpu,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/ALU.v,1755761135,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/BPB.v,,ALU,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/BHT.v,1755691482,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/BTB.v,,BHT,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/BPB.v,1755826438,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/BubleDel.v,,BPB,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/BTB.v,1755691734,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/BubleDel.v,,BTB,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/BubleDel.v,1755756400,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/CPU.v,,BubleDel,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/CPU.v,1755825325,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/CU.v,,CPU,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/CU.v,1755757254,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/EXMEM.v,,CU,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/EXMEM.v,1755752637,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/Hi_reg.v,,EXMEM,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/Hi_reg.v,1755761747,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/IDEX.v,,Hi_reg,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/IDEX.v,1755756400,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/IFID.v,,IDEX,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/IFID.v,1755685474,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/Lo_reg.v,,IFID,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/Lo_reg.v,1755761748,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/MEMWB.v,,Lo_reg,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/MEMWB.v,1755752817,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/PC.v,,MEMWB,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/PC.v,1754984607,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/RegFile.v,,PC,,,,,,,,
+D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sources_1/new/RegFile.v,1755581965,verilog,,D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sim_1/new/sim_cpu.v,,RegFile,,,,,,,,

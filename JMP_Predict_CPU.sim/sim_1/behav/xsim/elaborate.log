@@ -1,0 +1,31 @@
+Vivado Simulator v2022.1
+Copyright 1986-1999, 2001-2022 Xilinx, Inc. All Rights Reserved.
+Running: D:/Xilinx/Vivado/2022.1/bin/unwrapped/win64.o/xelab.exe --incr --debug typical --relax --mt 2 -L xil_defaultlib -L dist_mem_gen_v8_0_13 -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot sim_cpu_behav xil_defaultlib.sim_cpu xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+WARNING: [VRFC 10-5021] port 'go' is not connected on this instance [D:/Xilinx/Vivado/projects-ps/JMP_Predict_CPU/JMP_Predict_CPU.srcs/sim_1/new/sim_cpu.v:7]
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.PC
+Compiling module xil_defaultlib.BPB_default
+Compiling module dist_mem_gen_v8_0_13.dist_mem_gen_v8_0_13(C_FAMILY="a...
+Compiling module xil_defaultlib.CS_DRAM
+Compiling module xil_defaultlib.IFID
+Compiling module xil_defaultlib.BubleDel
+Compiling module xil_defaultlib.CU
+Compiling module xil_defaultlib.RegFile
+Compiling module xil_defaultlib.IDEX
+Compiling module xil_defaultlib.ALU
+Compiling module xil_defaultlib.Hi_reg
+Compiling module xil_defaultlib.Lo_reg
+Compiling module xil_defaultlib.EXMEM
+Compiling module dist_mem_gen_v8_0_13.dist_mem_gen_v8_0_13(C_FAMILY="a...
+Compiling module xil_defaultlib.DS_DRAM
+Compiling module xil_defaultlib.MEMWB
+Compiling module xil_defaultlib.CPU
+Compiling module xil_defaultlib.sim_cpu
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot sim_cpu_behav
