@@ -3,236 +3,239 @@ module BPB(
     input wire clk,   
     input wire rst,   
     
-    // ========== Ô¤²â½Ó¿Ú (ÔÚÖ¸ÁîÈ¡Ö¸½×¶ÎIFÊ¹ÓÃ) ==========
-    input wire [31:0] pc_if,           // µ±Ç°È¡Ö¸½×¶ÎµÄ³ÌĞò¼ÆÊıÆ÷Öµ
-    output wire prediction,            // Ô¤²â½á¹û£º1Ô¤²â·ÖÖ§·¢Éú£¬0Ô¤²â²»·¢Éú
-    output wire [31:0] target_addr,    // Ô¤²âµÄ·ÖÖ§Ä¿±êµØÖ·
+    // ========== é¢„æµ‹æ¥å£ (åœ¨æŒ‡ä»¤å–æŒ‡é˜¶æ®µIFä½¿ç”¨) ==========
+    input wire [31:0] pc_if,           // å½“å‰å–æŒ‡é˜¶æ®µçš„ç¨‹åºè®¡æ•°å™¨å€¼
+    output wire prediction,            // é¢„æµ‹ç»“æœï¼š1é¢„æµ‹åˆ†æ”¯å‘ç”Ÿï¼Œ0é¢„æµ‹ä¸å‘ç”Ÿ
+    output wire [31:0] target_addr,    // é¢„æµ‹çš„åˆ†æ”¯ç›®æ ‡åœ°å€
     
-    // ========== ¸üĞÂ½Ó¿Ú (ÔÚÖ¸ÁîÒëÂë½×¶ÎIDÊ¹ÓÃ) ==========
-    input wire update_en,              // ¸üĞÂÊ¹ÄÜĞÅºÅ£¬±íÊ¾ĞèÒª¸üĞÂÔ¤²âÆ÷
-    input wire [31:0] pc_ex,           // ÒëÂë½×¶ÎµÄPCÖµ£¨·ÖÖ§Ö¸ÁîµØÖ·£©
-    input wire actual_taken,           // Êµ¼ÊµÄ·ÖÖ§½á¹û£¨À´×ÔÖ´ĞĞ½×¶Î£©
-    input wire [31:0] actual_target    // Êµ¼ÊµÄ·ÖÖ§Ä¿±êµØÖ·
+    // ========== æ›´æ–°æ¥å£ (åœ¨æŒ‡ä»¤è¯‘ç é˜¶æ®µIDä½¿ç”¨) ==========
+    input wire update_en,              // æ›´æ–°ä½¿èƒ½ä¿¡å·ï¼Œè¡¨ç¤ºéœ€è¦æ›´æ–°é¢„æµ‹å™¨
+    input wire [31:0] pc_ex,           // æ‰§è¡Œé˜¶æ®µçš„PCå€¼ï¼ˆåˆ†æ”¯æŒ‡ä»¤åœ°å€ï¼‰
+    input wire actual_taken,           // å®é™…çš„åˆ†æ”¯ç»“æœï¼ˆæ¥è‡ªæ‰§è¡Œé˜¶æ®µï¼‰
+    input wire [31:0] actual_target    // å®é™…çš„åˆ†æ”¯ç›®æ ‡åœ°å€
 );
-    wire prediction_valid;              // Ô¤²âÊÇ·ñÓĞĞ§£º1±íÊ¾ÓĞÓĞĞ§Ô¤²â
-    // ========== ²ÎÊı¶¨Òå ==========
-    parameter ENTRIES = 16;            // BPBÖĞÌõÄ¿£¨±íÏî£©µÄÊıÁ¿
-    parameter TAG_WIDTH = 20;          // µØÖ·±êÇ©µÄÎ»¿í£¨ÓÃÓÚ±È½ÏPCµÄ¸ßÎ»£©
-    parameter LRU_BITS = 4;            // LRU¼ÆÊıÆ÷µÄÎ»¿í£¨ÓÃÓÚÌæ»»Ëã·¨£©
+    wire prediction_valid;              // é¢„æµ‹æ˜¯å¦æœ‰æ•ˆï¼š1è¡¨ç¤ºæœ‰æœ‰æ•ˆé¢„æµ‹
+    // ========== å‚æ•°å®šä¹‰ ==========
+    parameter ENTRIES = 16;            // BPBä¸­æ¡ç›®ï¼ˆè¡¨é¡¹ï¼‰çš„æ•°é‡
+    parameter TAG_WIDTH = 20;          // åœ°å€æ ‡ç­¾çš„ä½å®½ï¼ˆç”¨äºæ¯”è¾ƒPCçš„é«˜ä½ï¼‰
+    parameter LRU_BITS = 4;            // LRUè®¡æ•°å™¨çš„ä½å®½ï¼ˆç”¨äºæ›¿æ¢ç®—æ³•ï¼‰
 
-    // ========== ×´Ì¬»ú×´Ì¬¶¨Òå£¨Á½Î»±¥ºÍ¼ÆÊıÆ÷£© ==========
-    // ÓÃÓÚ¼ÇÂ¼ºÍÔ¤²â·ÖÖ§ĞĞÎª
-    localparam STRONGLY_NOT_TAKEN = 2'b00; // Ç¿ÁÒ²»Ìø×ª
-    localparam WEAKLY_NOT_TAKEN   = 2'b01; // Èõ²»Ìø×ª
-    localparam WEAKLY_TAKEN       = 2'b10; // ÈõÌø×ª
-    localparam STRONGLY_TAKEN     = 2'b11;  // Ç¿ÁÒÌø×ª
+    // ========== çŠ¶æ€æœºçŠ¶æ€å®šä¹‰ï¼ˆä¸¤ä½é¥±å’Œè®¡æ•°å™¨ï¼‰ ==========
+    // ç”¨äºè®°å½•å’Œé¢„æµ‹åˆ†æ”¯è¡Œä¸º
+    localparam STRONGLY_NOT_TAKEN = 2'b00; // å¼ºçƒˆä¸è·³è½¬
+    localparam WEAKLY_NOT_TAKEN   = 2'b01; // å¼±ä¸è·³è½¬
+    localparam WEAKLY_TAKEN       = 2'b10; // å¼±è·³è½¬
+    localparam STRONGLY_TAKEN     = 2'b11;  // å¼ºçƒˆè·³è½¬
     
-    // ========== BPB±íÌõÄ¿¼Ä´æÆ÷Êı×é ==========
-    // ÕâĞ©Êı×é¹²Í¬×é³ÉÁËBPB±í£¬Ã¿¸öÌõÄ¿°üº¬¶à¸ö×Ö¶Î
-    reg valid [0:ENTRIES-1];           // ÓĞĞ§Î»£º1±íÊ¾¸ÃÌõÄ¿ÓĞĞ§
-    reg [TAG_WIDTH-1:0] tag [0:ENTRIES-1]; // µØÖ·±êÇ©£¨´æ´¢PCµÄ¸ßÎ»£©
-    reg [1:0] state [0:ENTRIES-1];     // Ë«Î»Ô¤²âÆ÷×´Ì¬£¨Ê¹ÓÃÉÏÃæ¶¨ÒåµÄ4ÖÖ×´Ì¬£©
-    reg [31:0] target [0:ENTRIES-1];   // Ô¤²âµÄÄ¿±êµØÖ·
-    reg [LRU_BITS-1:0] lru_count [0:ENTRIES-1]; // LRU¼ÆÊıÆ÷£¨ÓÃÓÚÊµÏÖ×î½ü×îÉÙÊ¹ÓÃÌæ»»Ëã·¨£©
+    // ========== BPBè¡¨æ¡ç›®å¯„å­˜å™¨æ•°ç»„ ==========
+    // è¿™äº›æ•°ç»„å…±åŒç»„æˆäº†BPBè¡¨ï¼Œæ¯ä¸ªæ¡ç›®åŒ…å«å¤šä¸ªå­—æ®µ
+    reg valid [0:ENTRIES-1];           // æœ‰æ•ˆä½ï¼š1è¡¨ç¤ºè¯¥æ¡ç›®æœ‰æ•ˆ
+    reg [TAG_WIDTH-1:0] tag [0:ENTRIES-1]; // åœ°å€æ ‡ç­¾ï¼ˆå­˜å‚¨PCçš„é«˜ä½ï¼‰
+    reg [1:0] state [0:ENTRIES-1];     // åŒä½é¢„æµ‹å™¨çŠ¶æ€ï¼ˆä½¿ç”¨ä¸Šé¢å®šä¹‰çš„4ç§çŠ¶æ€ï¼‰
+    reg [31:0] target [0:ENTRIES-1];   // é¢„æµ‹çš„ç›®æ ‡åœ°å€
+    reg [LRU_BITS-1:0] lru_count [0:ENTRIES-1]; // LRUè®¡æ•°å™¨ï¼ˆç”¨äºå®ç°æœ€è¿‘æœ€å°‘ä½¿ç”¨æ›¿æ¢ç®—æ³•ï¼‰
 
-    // ========== ÄÚ²¿ÁÙÊ±ĞÅºÅÉùÃ÷ ==========
-    wire [ENTRIES-1:0] tag_match;      // Ã¿¸öÎ»±íÊ¾¶ÔÓ¦ÌõÄ¿ÊÇ·ñ±êÇ©Æ¥Åä
-    wire hit;                          // ÊÇ·ñÓĞÌõÄ¿Æ¥Åä£¨¼´Ô¤²âÃüÖĞ£©
+    // ========== å†…éƒ¨ä¸´æ—¶ä¿¡å·å£°æ˜ ==========
+    wire [ENTRIES-1:0] tag_match;      // æ¯ä¸ªä½è¡¨ç¤ºå¯¹åº”æ¡ç›®æ˜¯å¦æ ‡ç­¾åŒ¹é…
+    wire hit;                          // æ˜¯å¦æœ‰æ¡ç›®åŒ¹é…ï¼ˆå³é¢„æµ‹å‘½ä¸­ï¼‰
     integer i;                         
     
-    // ÓÃÓÚLRUÌæ»»Ëã·¨µÄÁÙÊ±ĞÅºÅ
-    reg [LRU_BITS-1:0] min_lru;        // µ±Ç°×îĞ¡µÄLRUÖµ
-    reg [ENTRIES-1:0] min_lru_mask;    // ¶ÀÈÈÂë£¬Ö¸Ê¾ÄÄĞ©ÌõÄ¿¾ßÓĞ×îĞ¡µÄLRUÖµ
+    // ç”¨äºLRUæ›¿æ¢ç®—æ³•çš„ä¸´æ—¶ä¿¡å·
+    reg [LRU_BITS-1:0] min_lru;        // å½“å‰æœ€å°çš„LRUå€¼
+    reg [ENTRIES-1:0] min_lru_mask;    // ç‹¬çƒ­ç ï¼ŒæŒ‡ç¤ºå“ªäº›æ¡ç›®å…·æœ‰æœ€å°çš„LRUå€¼
 
-    // ========== ±êÇ©±È½ÏÂß¼­ ==========
+    // ========== æ ‡ç­¾æ¯”è¾ƒé€»è¾‘ ==========
     generate
         for (genvar j = 0; j < ENTRIES; j = j + 1) begin : tag_comparison
             assign tag_match[j] = valid[j] && (tag[j] == pc_if[TAG_WIDTH-1:0]);
         end
     endgenerate
 
-    // ========== ¼ò»¯ÃüÖĞÅĞ¶Ï ==========
+    // ========== ç®€åŒ–å‘½ä¸­åˆ¤æ–­ ==========
     assign hit = |tag_match;
     assign prediction_valid = hit;
 
-    // ========== Ô¤²â½á¹ûºÍÄ¿±êµØÖ·Ñ¡ÔñÂß¼­ ==========
-    reg pred_result;        // ÄÚ²¿¼Ä´æÆ÷£¬´æ´¢Ô¤²â½á¹û£¨ÊÇ·ñÌø×ª£©
-    reg [31:0] pred_target; // ÄÚ²¿¼Ä´æÆ÷£¬´æ´¢Ô¤²âµÄÄ¿±êµØÖ·
+    // ========== é¢„æµ‹ç»“æœå’Œç›®æ ‡åœ°å€é€‰æ‹©é€»è¾‘ ==========
+    reg pred_result;        // å†…éƒ¨å¯„å­˜å™¨ï¼Œå­˜å‚¨é¢„æµ‹ç»“æœï¼ˆæ˜¯å¦è·³è½¬ï¼‰
+    reg [31:0] pred_target; // å†…éƒ¨å¯„å­˜å™¨ï¼Œå­˜å‚¨é¢„æµ‹çš„ç›®æ ‡åœ°å€
     
-    always @(*) begin // ×éºÏÂß¼­
-        pred_result = 0;   // Ä¬ÈÏÔ¤²â²»Ìø×ª
-        pred_target = 0;   // Ä¬ÈÏÄ¿±êµØÖ·Îª0
+    always @(*) begin // ç»„åˆé€»è¾‘
+        pred_result = 0;   // é»˜è®¤é¢„æµ‹ä¸è·³è½¬
+        pred_target = 0;   // é»˜è®¤ç›®æ ‡åœ°å€ä¸º0
         
         for (i = 0; i < ENTRIES; i = i + 1) begin
             if (tag_match[i]) begin
                 pred_result = (state[i] >= WEAKLY_TAKEN) ? 1'b1 : 1'b0;
                 pred_target = target[i];
-                $display("[BPB] Ô¤²âÃüÖĞ: PC=%h, ÌõÄ¿Ë÷Òı=%d, Ô¤²â½á¹û=%b, Ä¿±êµØÖ·=%h", 
+                $display("[BPB] é¢„æµ‹å‘½ä¸­: PC=%h, æ¡ç›®ç´¢å¼•=%d, é¢„æµ‹ç»“æœ=%b, ç›®æ ‡åœ°å€=%h", 
                          pc_if, i, pred_result, pred_target);
             end
         end
         
         if (hit) begin
-            $display("[BPB] Ô¤²â½×¶Î: PC=%h, ÃüÖĞ=%b, Ô¤²âÌø×ª=%b, Ä¿±êµØÖ·=%h", 
+            $display("[BPB] é¢„æµ‹é˜¶æ®µ: PC=%h, å‘½ä¸­=%b, é¢„æµ‹è·³è½¬=%b, ç›®æ ‡åœ°å€=%h", 
                      pc_if, hit, pred_result, pred_target);
-        end else if (|pc_if) begin // ½öµ±pc_if·ÇÁãÊ±ÏÔÊ¾
-            $display("[BPB] Ô¤²â½×¶Î: PC=%h, Î´ÃüÖĞBPB", pc_if);
+        end else if (|pc_if) begin // ä»…å½“pc_iféé›¶æ—¶æ˜¾ç¤º
+            $display("[BPB] é¢„æµ‹é˜¶æ®µ: PC=%h, æœªå‘½ä¸­BPB", pc_if);
         end
      end
     
-    // ½«ÄÚ²¿¼Ä´æÆ÷µÄÖµÊä³öµ½Ä£¿é¶Ë¿Ú
+    // å°†å†…éƒ¨å¯„å­˜å™¨çš„å€¼è¾“å‡ºåˆ°æ¨¡å—ç«¯å£
     assign prediction = pred_result;
     assign target_addr = pred_target;
 
-    // ========== LRUÌæ»»Ëã·¨£º²éÕÒ×îĞ¡LRUÖµµÄÌõÄ¿ ==========
+    // ========== LRUæ›¿æ¢ç®—æ³•ï¼šæŸ¥æ‰¾æœ€å°LRUå€¼çš„æ¡ç›® ==========
     always @(*) begin
-        min_lru = {LRU_BITS{1'b1}}; // ³õÊ¼»¯Îª×î´óÖµ£¨ËùÓĞÎ»Îª1£©
-        min_lru_mask = 0;           // ³õÊ¼»¯ÎªÈ«0
+        min_lru = {LRU_BITS{1'b1}}; // åˆå§‹åŒ–ä¸ºæœ€å¤§å€¼ï¼ˆæ‰€æœ‰ä½ä¸º1ï¼‰
+        min_lru_mask = 0;           // åˆå§‹åŒ–ä¸ºå…¨0
         
-        // ±éÀúËùÓĞÌõÄ¿£¬Ñ°ÕÒ×îĞ¡µÄLRUÖµ
+        // éå†æ‰€æœ‰æ¡ç›®ï¼Œå¯»æ‰¾æœ€å°çš„LRUå€¼
         for (i = 0; i < ENTRIES; i = i + 1) begin
             if (lru_count[i] < min_lru) begin
-                // ·¢ÏÖ¸üĞ¡µÄLRUÖµ£¬¸üĞÂmin_lru£¬²¢ÖØÖÃmask
+                // å‘ç°æ›´å°çš„LRUå€¼ï¼Œæ›´æ–°min_lruï¼Œå¹¶é‡ç½®mask
                 min_lru = lru_count[i];
-                min_lru_mask = (1 << i); // ½«¶ÔÓ¦Î»ÖÃ1£¬ÆäËûÎª0
+                min_lru_mask = (1 << i); // å°†å¯¹åº”ä½ç½®1ï¼Œå…¶ä»–ä¸º0
             end else if (lru_count[i] == min_lru) begin
-                // ·¢ÏÖÏàÍ¬µÄLRUÖµ£¬ÔÚmaskÖĞÌí¼Ó¸ÃÌõÄ¿
+                // å‘ç°ç›¸åŒçš„LRUå€¼ï¼Œåœ¨maskä¸­æ·»åŠ è¯¥æ¡ç›®
                 min_lru_mask[i] = 1'b1;
             end
         end
     end
     
-    // ========== ¸¨Öúº¯Êı£ºÔÚ¾ßÓĞ×îĞ¡LRUµÄÌõÄ¿ÖĞÑ¡ÔñÒ»¸ö½øĞĞÌæ»» ==========
+    // ========== è¾…åŠ©å‡½æ•°ï¼šåœ¨å…·æœ‰æœ€å°LRUçš„æ¡ç›®ä¸­é€‰æ‹©ä¸€ä¸ªè¿›è¡Œæ›¿æ¢ ==========
     function integer find_replacement_entry;
-        input [ENTRIES-1:0] lru_mask; // ÊäÈë²ÎÊı£ºÖ¸Ê¾ÄÄĞ©ÌõÄ¿¾ßÓĞ×îĞ¡LRUÖµ
+        input [ENTRIES-1:0] lru_mask; // è¾“å…¥å‚æ•°ï¼šæŒ‡ç¤ºå“ªäº›æ¡ç›®å…·æœ‰æœ€å°LRUå€¼
         integer k;
         reg found; 
         begin
-            find_replacement_entry = 0; // Ä¬ÈÏ·µ»Ø0ºÅÌõÄ¿
-            found = 0; // ³õÊ¼»¯±êÖ¾Î»
+            find_replacement_entry = 0; // é»˜è®¤è¿”å›0å·æ¡ç›®
+            found = 0; // åˆå§‹åŒ–æ ‡å¿—ä½
             
-            // ±éÀúÑ°ÕÒµÚÒ»¸ö¾ßÓĞ×îĞ¡LRUµÄÌõÄ¿
+            // éå†å¯»æ‰¾ç¬¬ä¸€ä¸ªå…·æœ‰æœ€å°LRUçš„æ¡ç›®
             for (k = 0; k < ENTRIES; k = k + 1) begin
                 if (!found && lru_mask[k]) begin
                     find_replacement_entry = k;
-                    found = 1; // ÉèÖÃ±êÖ¾Î»
+                    found = 1; // è®¾ç½®æ ‡å¿—ä½
                 end
             end
-            $display("[BPB] LRUÌæ»»Ëã·¨: Ñ¡ÔñË÷Òı%d½øĞĞÌæ»»", find_replacement_entry);
+            $display("[BPB] LRUæ›¿æ¢ç®—æ³•: é€‰æ‹©ç´¢å¼•%dè¿›è¡Œæ›¿æ¢", find_replacement_entry);
         end
     endfunction
 
-    // ========== BPB±í¸üĞÂÂß¼­£¨ÔÚÊ±ÖÓÉÏÉıÑØ»ò¸´Î»Ê±´¥·¢£© ==========
-    integer found_index;   // ÁÙÊ±±äÁ¿£¬¼ÇÂ¼ÕÒµ½µÄÌõÄ¿Ë÷Òı
-    integer replace_index; // ÁÙÊ±±äÁ¿£¬¼ÇÂ¼ÒªÌæ»»µÄÌõÄ¿Ë÷Òı
-    reg found_flag;        // ±êÖ¾Î»
-    reg [1:0] old_state;   // ÓÃÓÚ¼ÇÂ¼¸üĞÂÇ°µÄ×´Ì¬
+    // ========== BPBè¡¨æ›´æ–°é€»è¾‘ï¼ˆåœ¨æ—¶é’Ÿä¸Šå‡æ²¿æˆ–å¤ä½æ—¶è§¦å‘ï¼‰ ==========
+    integer found_index;   // ä¸´æ—¶å˜é‡ï¼Œè®°å½•æ‰¾åˆ°çš„æ¡ç›®ç´¢å¼•
+    integer replace_index; // ä¸´æ—¶å˜é‡ï¼Œè®°å½•è¦æ›¿æ¢çš„æ¡ç›®ç´¢å¼•
+    reg found_flag;        // æ ‡å¿—ä½
+    reg [1:0] old_state;   // ç”¨äºè®°å½•æ›´æ–°å‰çš„çŠ¶æ€
     
     initial begin
-        // ³õÊ¼»¯ËùÓĞÌõÄ¿
+        // åˆå§‹åŒ–æ‰€æœ‰æ¡ç›®
         for (i = 0; i < ENTRIES; i = i + 1) begin
-            valid[i] <= 1'b0;                  // ÓĞĞ§Î»ÖÃ0
-            tag[i] <= 0;                       // ±êÇ©ÇåÁã
-            state[i] <= WEAKLY_NOT_TAKEN;      // ×´Ì¬³õÊ¼»¯ÎªÈõ²»Ìø×ª
-            target[i] <= 0;                    // Ä¿±êµØÖ·ÇåÁã
-            lru_count[i] <= i[LRU_BITS-1:0];   // LRU¼ÆÊıÆ÷³õÊ¼»¯Îª²»Í¬µÄÖµ£¨0,1,2,...£©
+            valid[i] <= 1'b0;                  // æœ‰æ•ˆä½ç½®0
+            tag[i] <= 0;                       // æ ‡ç­¾æ¸…é›¶
+            state[i] <= WEAKLY_NOT_TAKEN;      // çŠ¶æ€åˆå§‹åŒ–ä¸ºå¼±ä¸è·³è½¬
+            target[i] <= 0;                    // ç›®æ ‡åœ°å€æ¸…é›¶
+            lru_count[i] <= i[LRU_BITS-1:0];   // LRUè®¡æ•°å™¨åˆå§‹åŒ–ä¸ºä¸åŒçš„å€¼ï¼ˆ0,1,2,...ï¼‰
         end
-        $display("[BPB] BPBÄ£¿é³õÊ¼»¯Íê³É£¬ÌõÄ¿Êı=%d", ENTRIES);
+        $display("[BPB] BPBæ¨¡å—åˆå§‹åŒ–å®Œæˆï¼Œæ¡ç›®æ•°=%d", ENTRIES);
      end
      
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            // ¸´Î»²Ù×÷£º³õÊ¼»¯ËùÓĞÌõÄ¿
+            // å¤ä½æ“ä½œï¼šåˆå§‹åŒ–æ‰€æœ‰æ¡ç›®
             for (i = 0; i < ENTRIES; i = i + 1) begin
-                valid[i] <= 1'b0;                  // ÓĞĞ§Î»ÖÃ0
-                tag[i] <= 0;                       // ±êÇ©ÇåÁã
-                state[i] <= WEAKLY_NOT_TAKEN;      // ×´Ì¬³õÊ¼»¯ÎªÈõ²»Ìø×ª
-                target[i] <= 0;                    // Ä¿±êµØÖ·ÇåÁã
-                lru_count[i] <= i[LRU_BITS-1:0];   // LRU¼ÆÊıÆ÷³õÊ¼»¯Îª²»Í¬µÄÖµ£¨0,1,2,...£©
+                valid[i] <= 1'b0;                  // æœ‰æ•ˆä½ç½®0
+                tag[i] <= 0;                       // æ ‡ç­¾æ¸…é›¶
+                state[i] <= WEAKLY_NOT_TAKEN;      // çŠ¶æ€åˆå§‹åŒ–ä¸ºå¼±ä¸è·³è½¬
+                target[i] <= 0;                    // ç›®æ ‡åœ°å€æ¸…é›¶
+                lru_count[i] <= i[LRU_BITS-1:0];   // LRUè®¡æ•°å™¨åˆå§‹åŒ–ä¸ºä¸åŒçš„å€¼ï¼ˆ0,1,2,...ï¼‰
             end
-            $display("[BPB] ÏµÍ³¸´Î»: BPBËùÓĞÌõÄ¿ÒÑ³õÊ¼»¯");
-        end else if (update_en) begin // ¸üĞÂÊ¹ÄÜÓĞĞ§£¬ĞèÒª¸üĞÂBPB
-            $display("[BPB] ¸üĞÂÇëÇó: PC=%h, Êµ¼ÊÌø×ª=%b, Êµ¼ÊÄ¿±êµØÖ·=%h", 
+            $display("[BPB] ç³»ç»Ÿå¤ä½: BPBæ‰€æœ‰æ¡ç›®å·²åˆå§‹åŒ–");
+        end else if (update_en) begin // æ›´æ–°ä½¿èƒ½æœ‰æ•ˆï¼Œéœ€è¦æ›´æ–°BPB
+            $display("[BPB] æ›´æ–°è¯·æ±‚: PC=%h, å®é™…è·³è½¬=%b, å®é™…ç›®æ ‡åœ°å€=%h", 
                      pc_ex, actual_taken, actual_target);
                      
-            // µÚÒ»²½£º²éÕÒBPBÖĞÊÇ·ñÒÑÓĞµ±Ç°·ÖÖ§Ö¸ÁîµÄÌõÄ¿
-            found_index = -1; // ³õÊ¼»¯Îª-1±íÊ¾Î´ÕÒµ½
-            found_flag = 0;   // ÖØÖÃ±êÖ¾Î»
+            // ç¬¬ä¸€æ­¥ï¼šæŸ¥æ‰¾BPBä¸­æ˜¯å¦å·²æœ‰å½“å‰åˆ†æ”¯æŒ‡ä»¤çš„æ¡ç›®
+            found_index = -1; // åˆå§‹åŒ–ä¸º-1è¡¨ç¤ºæœªæ‰¾åˆ°
+            found_flag = 0;   // é‡ç½®æ ‡å¿—ä½
             for (i = 0; i < ENTRIES && !found_flag; i = i + 1) begin
                 if (valid[i] && (tag[i] == pc_ex[TAG_WIDTH-1:0])) begin
-                    found_index = i; // ¼ÇÂ¼ÕÒµ½µÄÌõÄ¿Ë÷Òı
-                    found_flag = 1;  // ÉèÖÃ±êÖ¾Î»
-                    $display("[BPB] ÕÒµ½ÏÖÓĞÌõÄ¿: Ë÷Òı=%d", i);
+                    found_index = i; // è®°å½•æ‰¾åˆ°çš„æ¡ç›®ç´¢å¼•
+                    found_flag = 1;  // è®¾ç½®æ ‡å¿—ä½
+                    $display("[BPB] æ‰¾åˆ°ç°æœ‰æ¡ç›®: ç´¢å¼•=%d", i);
                 end
             end
             
-            // µÚ¶ş²½£º¸ù¾İÊÇ·ñÕÒµ½ÌõÄ¿½øĞĞ¸üĞÂ»ò´´½¨
+            // ç¬¬äºŒæ­¥ï¼šæ ¹æ®æ˜¯å¦æ‰¾åˆ°æ¡ç›®è¿›è¡Œæ›´æ–°æˆ–åˆ›å»º
             if (found_index != -1) begin
-                // Çé¿ö1£ºÕÒµ½ÏÖÓĞÌõÄ¿£¬¸üĞÂ×´Ì¬»úºÍÄ¿±êµØÖ·
-                old_state = state[found_index]; // ¼ÇÂ¼¾É×´Ì¬
+                // æƒ…å†µ1ï¼šæ‰¾åˆ°ç°æœ‰æ¡ç›®ï¼Œæ›´æ–°çŠ¶æ€æœºå’Œç›®æ ‡åœ°å€
+                old_state = state[found_index]; // è®°å½•æ—§çŠ¶æ€
                 
-                // ¸ù¾İµ±Ç°×´Ì¬ºÍÊµ¼Ê½á¹û¸üĞÂË«Î»Ô¤²âÆ÷×´Ì¬
+                // æ ¹æ®å½“å‰çŠ¶æ€å’Œå®é™…ç»“æœæ›´æ–°åŒä½é¢„æµ‹å™¨çŠ¶æ€
                 case (state[found_index])
                     STRONGLY_NOT_TAKEN: 
-                        // µ±Ç°Ç¿²»Ìø×ª£ºÊµ¼ÊÌø×ªÔò±äÎªÈõ²»Ìø×ª£¬Êµ¼Ê²»Ìø×ª±£³ÖÇ¿²»Ìø×ª
+                        // å½“å‰å¼ºä¸è·³è½¬ï¼šå®é™…è·³è½¬åˆ™å˜ä¸ºå¼±ä¸è·³è½¬ï¼Œå®é™…ä¸è·³è½¬ä¿æŒå¼ºä¸è·³è½¬
                         state[found_index] <= actual_taken ? WEAKLY_NOT_TAKEN : STRONGLY_NOT_TAKEN;
                     WEAKLY_NOT_TAKEN: 
-                        // µ±Ç°Èõ²»Ìø×ª£ºÊµ¼ÊÌø×ª±äÎªÈõÌø×ª£¬Êµ¼Ê²»Ìø×ª±äÎªÇ¿²»Ìø×ª
+                        // å½“å‰å¼±ä¸è·³è½¬ï¼šå®é™…è·³è½¬å˜ä¸ºå¼±è·³è½¬ï¼Œå®é™…ä¸è·³è½¬å˜ä¸ºå¼ºä¸è·³è½¬
                         state[found_index] <= actual_taken ? WEAKLY_TAKEN : STRONGLY_NOT_TAKEN;
                     WEAKLY_TAKEN: 
-                        // µ±Ç°ÈõÌø×ª£ºÊµ¼ÊÌø×ª±äÎªÇ¿Ìø×ª£¬Êµ¼Ê²»Ìø×ª±äÎªÈõ²»Ìø×ª
+                        // å½“å‰å¼±è·³è½¬ï¼šå®é™…è·³è½¬å˜ä¸ºå¼ºè·³è½¬ï¼Œå®é™…ä¸è·³è½¬å˜ä¸ºå¼±ä¸è·³è½¬
                         state[found_index] <= actual_taken ? STRONGLY_TAKEN : WEAKLY_NOT_TAKEN;
                     STRONGLY_TAKEN: 
-                        // µ±Ç°Ç¿Ìø×ª£ºÊµ¼ÊÌø×ª±£³ÖÇ¿Ìø×ª£¬Êµ¼Ê²»Ìø×ª±äÎªÈõÌø×ª
+                        // å½“å‰å¼ºè·³è½¬ï¼šå®é™…è·³è½¬ä¿æŒå¼ºè·³è½¬ï¼Œå®é™…ä¸è·³è½¬å˜ä¸ºå¼±è·³è½¬
                         state[found_index] <= actual_taken ? STRONGLY_TAKEN : WEAKLY_TAKEN;
                 endcase
                 
-                // ¸üĞÂÄ¿±êµØÖ·£¨¼´Ê¹µØÖ·¿ÉÄÜ²»±ä£©
-                target[found_index] <= actual_target;
+                // æ›´æ–°ç›®æ ‡åœ°å€
+                if (actual_taken) begin
+                    target[found_index] <= actual_target;
+                    $display("[BPB] æ›´æ–°ç›®æ ‡åœ°å€: ç´¢å¼•=%d, æ–°ç›®æ ‡åœ°å€=%h", found_index, actual_target);
+                end
                 
-                // ¸üĞÂLRU¼ÆÊıÆ÷£º½«µ±Ç°Ê¹ÓÃµÄÌõÄ¿¼ÆÊıÆ÷ÉèÎª×î´óÖµ
+                // æ›´æ–°LRUè®¡æ•°å™¨ï¼šå°†å½“å‰ä½¿ç”¨çš„æ¡ç›®è®¡æ•°å™¨è®¾ä¸ºæœ€å¤§å€¼
                 lru_count[found_index] <= {LRU_BITS{1'b1}};
                 
-                // ¼õÉÙÆäËûËùÓĞÌõÄ¿µÄLRUÖµ£¨Ä£ÄâÊ±¼äÁ÷ÊÅ£©
+                // å‡å°‘å…¶ä»–æ‰€æœ‰æ¡ç›®çš„LRUå€¼ï¼ˆæ¨¡æ‹Ÿæ—¶é—´æµé€ï¼‰
                 for (i = 0; i < ENTRIES; i = i + 1) begin
                     if (i != found_index && lru_count[i] > 0) begin
                         lru_count[i] <= lru_count[i] - 1;
                     end
                 end
                 
-                $display("[BPB] ¸üĞÂÏÖÓĞÌõÄ¿: Ë÷Òı=%d, ¾É×´Ì¬=%b, ĞÂ×´Ì¬=%b, Ä¿±êµØÖ·=%h", 
+                $display("[BPB] æ›´æ–°ç°æœ‰æ¡ç›®: ç´¢å¼•=%d, æ—§çŠ¶æ€=%b, æ–°çŠ¶æ€=%b, ç›®æ ‡åœ°å€=%h", 
                          found_index, old_state, state[found_index], actual_target);
                 
             end else if (actual_taken) begin
-                // Çé¿ö2£ºÎ´ÕÒµ½ÌõÄ¿ÇÒÊµ¼Ê·¢ÉúÁË·ÖÖ§£¬ĞèÒª´´½¨ĞÂÌõÄ¿
-                $display("[BPB] Î´ÕÒµ½Æ¥ÅäÌõÄ¿£¬ĞèÒª´´½¨ĞÂÌõÄ¿");
+                // æƒ…å†µ2ï¼šæœªæ‰¾åˆ°æ¡ç›®ä¸”å®é™…å‘ç”Ÿäº†åˆ†æ”¯ï¼Œéœ€è¦åˆ›å»ºæ–°æ¡ç›®
+                $display("[BPB] æœªæ‰¾åˆ°åŒ¹é…æ¡ç›®ï¼Œéœ€è¦åˆ›å»ºæ–°æ¡ç›®");
                 
-                // Ê¹ÓÃLRUËã·¨Ñ¡ÔñÒªÌæ»»µÄÌõÄ¿
+                // ä½¿ç”¨LRUç®—æ³•é€‰æ‹©è¦æ›¿æ¢çš„æ¡ç›®
                 replace_index = find_replacement_entry(min_lru_mask);
                 
-                // ´´½¨ĞÂÌõÄ¿
-                valid[replace_index] <= 1'b1; // ÉèÖÃÓĞĞ§Î»
-                tag[replace_index] <= pc_ex[TAG_WIDTH-1:0]; // ´æ´¢±êÇ©
-                // ¸ù¾İÊµ¼Ê½á¹û³õÊ¼»¯×´Ì¬£ºÊµ¼ÊÌø×ªÔò³õÊ¼»¯ÎªÈõÌø×ª£¬·ñÔòÈõ²»Ìø×ª
+                // åˆ›å»ºæ–°æ¡ç›®
+                valid[replace_index] <= 1'b1; // è®¾ç½®æœ‰æ•ˆä½
+                tag[replace_index] <= pc_ex[TAG_WIDTH-1:0]; // å­˜å‚¨æ ‡ç­¾
+                // æ ¹æ®å®é™…ç»“æœåˆå§‹åŒ–çŠ¶æ€ï¼šå®é™…è·³è½¬åˆ™åˆå§‹åŒ–ä¸ºå¼±è·³è½¬ï¼Œå¦åˆ™å¼±ä¸è·³è½¬
                 state[replace_index] <= actual_taken ? WEAKLY_TAKEN : WEAKLY_NOT_TAKEN;
-                target[replace_index] <= actual_target; // ´æ´¢Ä¿±êµØÖ·
-                lru_count[replace_index] <= {LRU_BITS{1'b1}}; // ÉèÖÃLRUÎª×î´óÖµ
+                target[replace_index] <= actual_target; // å­˜å‚¨ç›®æ ‡åœ°å€
+                lru_count[replace_index] <= {LRU_BITS{1'b1}}; // è®¾ç½®LRUä¸ºæœ€å¤§å€¼
                 
-                // ¼õÉÙÆäËûËùÓĞÌõÄ¿µÄLRUÖµ
+                // å‡å°‘å…¶ä»–æ‰€æœ‰æ¡ç›®çš„LRUå€¼
                 for (i = 0; i < ENTRIES; i = i + 1) begin
                     if (i != replace_index && lru_count[i] > 0) begin
                         lru_count[i] <= lru_count[i] - 1;
                     end
                 end
                 
-                $display("[BPB] ´´½¨ĞÂÌõÄ¿: Ë÷Òı=%d, ±êÇ©=%h, ×´Ì¬=%b, Ä¿±êµØÖ·=%h", 
+                $display("[BPB] åˆ›å»ºæ–°æ¡ç›®: ç´¢å¼•=%d, æ ‡ç­¾=%h, çŠ¶æ€=%b, ç›®æ ‡åœ°å€=%h", 
                          replace_index, pc_ex[TAG_WIDTH-1:0], 
                          (actual_taken ? WEAKLY_TAKEN : WEAKLY_NOT_TAKEN), 
                          actual_target);
             end else begin
-                $display("[BPB] Î´ÕÒµ½Æ¥ÅäÌõÄ¿ÇÒ·ÖÖ§Î´·¢Éú£¬ÎŞĞè¸üĞÂ");
+                $display("[BPB] æœªæ‰¾åˆ°åŒ¹é…æ¡ç›®ä¸”åˆ†æ”¯æœªå‘ç”Ÿï¼Œæ— éœ€æ›´æ–°");
             end
-            // ×¢Òâ£ºÈç¹ûÎ´ÕÒµ½ÌõÄ¿ÇÒÊµ¼ÊÃ»ÓĞ·¢Éú·ÖÖ§£¬Ôò²»´´½¨ĞÂÌõÄ¿
+            // æ³¨æ„ï¼šå¦‚æœæœªæ‰¾åˆ°æ¡ç›®ä¸”å®é™…æ²¡æœ‰å‘ç”Ÿåˆ†æ”¯ï¼Œåˆ™ä¸åˆ›å»ºæ–°æ¡ç›®
         end
     end
 
